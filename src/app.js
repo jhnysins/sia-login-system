@@ -3,7 +3,7 @@ import { auth } from './config/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import LoginForm from './pages/LoginForm';
 import Dashboard from './pages/Dashboard';
-import './GradientBackground.css'; // Using your existing background
+import './styles/GradientBackground.css'; // Using your existing background
 
 export default function App() {
     const [user, setUser] = useState(null);
