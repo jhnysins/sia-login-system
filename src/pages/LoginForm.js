@@ -509,12 +509,12 @@ export default function LoginForm() {
                     <span>Or continue with</span>
                     <div className="flex-1 h-px bg-white/10" />
                   </div>
-                  <div className="mt-4 grid grid-cols-2 gap-3">
+                  <div className="mt-4">
                     <button
                       type="button"
-                      onClick={handleGoogleSignIn} // <-- ATTACHED FUNCTION
-                      disabled={isLoading} // <-- ADDED DISABLED STATE
-                      className="flex items-center justify-center gap-2 rounded-xl border border-[#3a3d42] bg-[#2a2d31]/70 py-2.5 text-sm text-white/85 hover:bg-[#3a3f47] hover:border-[#5a636e] transition disabled:opacity-50"
+                      onClick={handleGoogleSignIn}
+                      disabled={isLoading}
+                      className="w-full flex items-center justify-center gap-2 rounded-xl border border-[#3a3d42] bg-[#2a2d31]/70 py-2.5 text-sm text-white/85 hover:bg-[#3a3f47] hover:border-[#5a636e] transition disabled:opacity-50"
                     >
                       <svg
                         className="w-4 h-4"
@@ -539,25 +539,6 @@ export default function LoginForm() {
                         />
                       </svg>
                       <span>Google</span>
-                    </button>
-                    <button
-                      type="button"
-                      className="flex items-center justify-center gap-2 rounded-xl border border-[#3a3d42] bg-[#2a2d31]/70 py-2.5 text-sm text-white/85 hover:bg-[#3a3f47] hover:border-[#5a636e] transition"
-                    >
-                      <svg
-                        className="w-4 h-4"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <rect x="3" y="3" width="18" height="18" rx="2" />
-                        <rect x="7" y="7" width="3" height="3" />
-                        <rect x="14" y="7" width="3" height="3" />
-                        <rect x="7" y="14" width="3" height="3" />
-                        <rect x="14" y="14" width="3" height="3" />
-                      </svg>
-                      <span>Login QR</span>
                     </button>
                   </div>
                 </>

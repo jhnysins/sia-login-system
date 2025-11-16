@@ -3,6 +3,7 @@ import { auth } from './config/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import LoginForm from './pages/LoginForm';
 import Dashboard from './pages/Dashboard';
+import VerificationPage from './pages/VerificationPage';
 import './styles/GradientBackground.css'; // Using your existing background
 
 export default function App() {
@@ -33,7 +34,13 @@ export default function App() {
 
     return (
         <div>
-            {(!user || !user.emailVerified) ? <LoginForm /> : <Dashboard user={user} />}
+            {!user ? (
+                <LoginForm />
+            ) : !user.emailVerified ? (
+                <VerificationPage user={user} onVerified={() => user.reload().then(() => setUser(auth.currentUser))} />
+            ) : (
+                <Dashboard user={user} />
+            )}
         </div>
     );
 }
