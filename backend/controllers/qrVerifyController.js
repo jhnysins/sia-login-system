@@ -58,6 +58,16 @@ exports.verifyQR = async (req, res) => {
       return res.status(410).json({ error: 'Token expired' });
     }
 
+    // Mark user's email as verified in Firebase Auth
+    const { admin } = require('../config/firebase-admin');
+    try {
+      await admin.auth().updateUser(data.userId, {
+        emailVerified: true
+      });
+    } catch (authError) {
+      console.error('Failed to verify user email:', authError);
+    }
+
     await db.collection('qrVerifications').doc(token).update({
       verified: true,
       verifiedAt: Date.now()
