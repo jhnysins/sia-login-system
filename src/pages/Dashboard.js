@@ -1,7 +1,7 @@
 import React from 'react';
-import { auth } from './firebase';
+import { auth } from '../config/firebase';
 import { signOut } from 'firebase/auth';
-import './GradientBackground.css'; 
+import '../styles/GradientBackground.css'; 
 
 export default function Dashboard({ user }) {
   

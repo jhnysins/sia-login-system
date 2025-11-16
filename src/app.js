@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { auth } from './firebase';
+import { auth } from './config/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import LoginForm from './LoginForm';
-import Dashboard from './dashboard';
+import LoginForm from './pages/LoginForm';
+import Dashboard from './pages/Dashboard';
 import './GradientBackground.css'; // Using your existing background
 
 export default function App() {
