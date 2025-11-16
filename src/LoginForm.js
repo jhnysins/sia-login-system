@@ -7,9 +7,11 @@ import { auth, db } from "./firebase";
 import { 
   createUserWithEmailAndPassword, 
   sendEmailVerification,
-  signInWithEmailAndPassword // <-- Import sign-in function
+  signInWithEmailAndPassword,
+  GoogleAuthProvider, // <-- NEW IMPORT
+  signInWithPopup     // <-- NEW IMPORT
 } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc } from "firebase/firestore"; // <-- ADDED getDoc
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -129,7 +131,7 @@ export default function LoginForm() {
       }
 
       try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        await signInWithEmailAndPassword(auth, email, password);
         
         // --- THIS IS THE FIX ---
         // After sign-in, auth.currentUser is populated.
@@ -163,6 +165,54 @@ export default function LoginForm() {
       } finally {
         setIsLoading(false);
       }
+    }
+  };
+
+  // --- NEW FUNCTION FOR GOOGLE SIGN-IN ---
+  const handleGoogleSignIn = async () => {
+    setError(null);
+    setMessage(null);
+    setIsLoading(true);
+    
+    const provider = new GoogleAuthProvider();
+
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      // Check if a document for this user already exists in Firestore
+      const userDocRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userDocRef);
+
+      // If the user document doesn't exist, create it (first time login)
+      if (!userDoc.exists()) {
+        const nameParts = user.displayName ? user.displayName.split(' ') : ['User'];
+        const firstName = nameParts[0];
+        const lastName = nameParts.slice(1).join(' ');
+
+        await setDoc(userDocRef, {
+          fname: firstName,
+          lname: lastName,
+          middlename: "",
+          username: user.email.split('@')[0], // Use email prefix as default username
+          email: user.email,
+        });
+      }
+      
+      // Sign-in is successful. The onAuthStateChanged listener in app.js
+      // will see the user (who is already emailVerified) and show the dashboard.
+      // We don't need to do anything else here.
+
+    } catch (error) {
+      // Handle Errors here.
+      if (error.code === 'auth/popup-closed-by-user') {
+        setError('Sign-in cancelled. Please try again.');
+      } else {
+        setError('Failed to sign in with Google.');
+        console.error("Google sign-in error:", error);
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -327,7 +377,7 @@ export default function LoginForm() {
                   </div>
                 )}
                 {error && (
-                  <div className="text-sm text-red-400 p-3 bg-red-900/30 rounded-xl border border-red-700">
+                  <div className="text-sm text-red-400 p-3 bg-red-900/3Zodiaci rounded-xl border border-red-700">
                     {error}
                   </div>
                 )}
@@ -350,7 +400,12 @@ export default function LoginForm() {
                   <div className="flex-1 h-px bg-white/10" />
                 </div>
                 <div className="mt-4 grid grid-cols-2 gap-3">
-                  <button type="button" className="flex items-center justify-center gap-2 rounded-xl border border-[#3a3d42] bg-[#2a2d31]/70 py-2.5 text-sm text-white/85 hover:bg-[#3a3f47] hover:border-[#5a636e] transition">
+                  <button 
+                    type="button"
+                    onClick={handleGoogleSignIn} // <-- ATTACHED FUNCTION
+                    disabled={isLoading}        // <-- ADDED DISABLED STATE
+                    className="flex items-center justify-center gap-2 rounded-xl border border-[#3a3d42] bg-[#2a2d31]/70 py-2.5 text-sm text-white/85 hover:bg-[#3a3f47] hover:border-[#5a636e] transition disabled:opacity-50"
+                  >
                     <span className="text-base">G</span>
                     <span>Google</span>
                   </button>
