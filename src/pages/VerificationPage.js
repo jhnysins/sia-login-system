@@ -48,7 +48,10 @@ export default function VerificationPage({ user, onVerified }) {
           const res = await fetch(`${API_URL}/api/qr/check/${qrToken}`);
           const data = await res.json();
           if (data.verified) {
+            clearInterval(pollInterval);
             setMessage("QR verified successfully!");
+            // Mark email as verified by reloading user
+            await user.reload();
             setTimeout(() => onVerified(), 1500);
           }
         } catch (err) {
@@ -57,7 +60,7 @@ export default function VerificationPage({ user, onVerified }) {
       }, 2000);
       return () => clearInterval(pollInterval);
     }
-  }, [method, qrToken, onVerified]);
+  }, [method, qrToken, onVerified, user]);
 
   useEffect(() => {
     if (method === "qr") {
