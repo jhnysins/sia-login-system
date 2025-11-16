@@ -2,18 +2,38 @@ import { useState, useEffect } from "react";
 import "./LoginForm.css";
 import "./GradientBackground.css";
 
+// Import Firebase services
+import { auth, db } from "./firebase";
+import { 
+  createUserWithEmailAndPassword, 
+  sendEmailVerification,
+  signInWithEmailAndPassword // <-- Import sign-in function
+} from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
+
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [currentImage, setCurrentImage] = useState(0);
 
+  // Form state
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  // Feedback state
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [message, setMessage] = useState(null);
+
   const images = [
     "https://images.pexels.com/photos/417173/pexels-photo-417173.jpeg?auto=compress&cs=tinysrgb&w=1200",
     "https://images.pexels.com/photos/552778/pexels-photo-552778.jpeg?auto=compress&cs=tinysrgb&w=1200",
     "https://images.pexels.com/photos/1670187/pexels-photo-1670187.jpeg?auto=compress&cs=tinysrgb&w=1200",
     "https://images.pexels.com/photos/1439226/pexels-photo-1439226.jpeg?auto=compress&cs=tinysrgb&w=1200"
-    
   ];
 
   useEffect(() => {
@@ -26,12 +46,118 @@ export default function LoginForm() {
 
   const handleToggle = () => {
     setIsTransitioning(true);
+    // Clear form fields and messages on toggle
+    setFirstName("");
+    setLastName("");
+    setUsername("");
+    setEmail("");
+    setPassword("");
+    setError(null);
+    setMessage(null);
     setTimeout(() => {
       setIsSignUp(!isSignUp);
     }, 250);
     setTimeout(() => {
       setIsTransitioning(false);
     }, 950);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
+    setMessage(null);
+    setIsLoading(true); // Set loading true for both sign-in and sign-up
+    
+    // --- SIGN UP LOGIC ---
+    if (isSignUp) {
+      if (!firstName || !lastName || !username || !email || !password) {
+        setError("Please fill in all fields.");
+        setIsLoading(false);
+        return;
+      }
+      if (password.length < 8) {
+        setError("Password must be at least 8 characters.");
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        // 1. Create user in Firebase Auth
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        // 2. Send verification email
+        await sendEmailVerification(user);
+
+        // 3. Create user document in Firestore (like your screenshot)
+        // We use the user's UID (user.uid) as the document ID
+        await setDoc(doc(db, "users", user.uid), {
+          fname: firstName,
+          lname: lastName,
+          middlename: "", // Added this field from your screenshot
+          username: username,
+          email: user.email,
+        });
+
+        // 4. Set success message and clear form
+        setMessage("Account created! Please check your email for a verification link.");
+        setFirstName("");
+        setLastName("");
+        setUsername("");
+        setEmail("");
+        setPassword("");
+
+      } catch (error) {
+        // Handle Firebase errors
+        if (error.code === 'auth/email-already-in-use') {
+          setError('This email is already in use. Please log in.');
+        } else if (error.code === 'auth/weak-password') {
+          setError('Password is too weak. Please use at least 8 characters.');
+        } else {
+          setError('Failed to create account. Please try again.');
+          console.error("Sign up error:", error);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      // --- SIGN IN LOGIC ---
+      if (!email || !password) {
+        setError("Please enter your email and password.");
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        if (!user.emailVerified) {
+          setError("Your email is not verified. Please check your inbox for a verification link.");
+          // Optionally, you can offer to resend the verification email
+          // await sendEmailVerification(user);
+        } else {
+          // Sign-in successful!
+          setMessage("Sign in successful! Welcome back.");
+          // Clear form
+          setEmail("");
+          setPassword("");
+          // Here you would typically redirect the user to a dashboard
+          // e.g., navigate('/dashboard');
+        }
+
+      } catch (error) {
+        // Handle Firebase sign-in errors
+        if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+          setError('Invalid email or password.');
+        } else {
+          setError('Failed to sign in. Please try again.');
+          console.error("Sign in error:", error);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    }
   };
 
   return (
@@ -50,18 +176,15 @@ export default function LoginForm() {
               className="w-full h-full object-cover transition-opacity duration-1000"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
-
             <div className="absolute top-6 left-6 flex items-center gap-2 text-white text-xl font-semibold tracking-[0.25em]">
               <span>Login</span>
             </div>
-
             <div className="absolute bottom-10 left-8 text-white">
               <p className="text-lg font-medium leading-snug">
                 Capturing Moments,
                 <br />
                 Creating Memories
               </p>
-
               <div className="mt-6 flex items-center gap-2">
                 {images.map((_, index) => (
                   <span
@@ -83,7 +206,7 @@ export default function LoginForm() {
               {isSignUp ? 'Create an account' : 'Welcome back'}
             </h1>
 
-            <form className="mt-8 space-y-4">
+            <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
               <div className={`transition-all duration-500 ease-in-out ${isSignUp ? 'opacity-100 max-h-96' : 'opacity-0 max-h-0 overflow-hidden'}`}>
                 <div className="space-y-4 mb-4">
                   <div className="flex flex-col md:flex-row md:space-x-3 space-y-4 md:space-y-0">
@@ -92,6 +215,8 @@ export default function LoginForm() {
                       <input
                         type="text"
                         placeholder="First name"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
                         className="w-full rounded-xl bg-[#2a2d31] border border-[#3a3d42] px-3.5 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#d9d9d9] focus:border-transparent transition"
                       />
                     </div>
@@ -100,6 +225,8 @@ export default function LoginForm() {
                       <input
                         type="text"
                         placeholder="Last name"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
                         className="w-full rounded-xl bg-[#2a2d31] border border-[#3a3d42] px-3.5 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#d9d9d9] focus:border-transparent transition"
                       />
                     </div>
@@ -109,6 +236,8 @@ export default function LoginForm() {
                     <input
                       type="text"
                       placeholder="Username"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
                       className="w-full rounded-xl bg-[#2a2d31] border border-[#3a3d42] px-3.5 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#d9d9d9] focus:border-transparent transition"
                     />
                   </div>
@@ -119,6 +248,8 @@ export default function LoginForm() {
                 <input
                   type="email"
                   placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="w-full rounded-xl bg-[#2a2d31] border border-[#3a3d42] px-3.5 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#d9d9d9] focus:border-transparent transition"
                 />
               </div>
@@ -129,6 +260,8 @@ export default function LoginForm() {
                   <input
                     type={showPassword ? "text" : "password"}
                     placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     className="w-full rounded-xl bg-[#2a2d31] border border-[#3a3d42] px-3.5 py-3 pr-11 text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#d9d9d9] focus:border-transparent transition"
                   />
                   <button
@@ -157,7 +290,7 @@ export default function LoginForm() {
                   />
                   <label htmlFor="terms" className="leading-snug">
                     I agree to the{" "}
-                    <button className="underline underline-offset-2 hover:text-white/80">
+                    <button type="button" className="underline underline-offset-2 hover:text-white/80">
                       Terms & Conditions
                     </button>
                   </label>
@@ -174,18 +307,33 @@ export default function LoginForm() {
                       Remember me
                     </label>
                   </div>
-                  <button className="text-[#d9d9d9] hover:text-white transition">
+                  <button type="button" className="text-[#d9d9d9] hover:text-white transition">
                     Forgot password?
                   </button>
                 </div>
               )}
 
-              <button
-                type="submit"
-                className="mt-2 w-full rounded-xl bg-gradient-to-r from-[#d9d9d9] via-[#b8bcc2] to-[#e7e7e7] hover:from-[#cfcfcf] hover:via-[#b4b8be] hover:to-[#dcdcdc] active:from-[#c5c5c5] active:via-[#aab0b6] active:to-[#d2d2d2] transition font-medium text-sm text-[#222629] py-3 shadow-[0_18px_40px_rgba(0,0,0,0.55)]"
-              >
-                {isSignUp ? 'Create account' : 'Sign in'}
-              </button>
+              {/* --- Message & Error Display --- */}
+              <div className="pt-2 space-y-3">
+                {message && (
+                  <div className="text-sm text-green-400 p-3 bg-green-900/30 rounded-xl border border-green-700">
+                    {message}
+                  </div>
+                )}
+                {error && (
+                  <div className="text-sm text-red-400 p-3 bg-red-900/30 rounded-xl border border-red-700">
+                    {error}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full rounded-xl bg-gradient-to-r from-[#d9d9d9] via-[#b8bcc2] to-[#e7e7e7] hover:from-[#cfcfcf] hover:via-[#b4b8be] hover:to-[#dcdcdc] active:from-[#c5c5c5] active:via-[#aab0b6] active:to-[#d2d2d2] transition font-medium text-sm text-[#222629] py-3 shadow-[0_18px_40px_rgba(0,0,0,0.55)] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? (isSignUp ? 'Creating...' : 'Signing in...') : (isSignUp ? 'Create account' : 'Sign in')}
+                </button>
+              </div>
             </form>
 
             {!isSignUp && (
@@ -195,13 +343,12 @@ export default function LoginForm() {
                   <span>Or continue with</span>
                   <div className="flex-1 h-px bg-white/10" />
                 </div>
-
                 <div className="mt-4 grid grid-cols-2 gap-3">
-                  <button className="flex items-center justify-center gap-2 rounded-xl border border-[#3a3d42] bg-[#2a2d31]/70 py-2.5 text-sm text-white/85 hover:bg-[#3a3f47] hover:border-[#5a636e] transition">
+                  <button type="button" className="flex items-center justify-center gap-2 rounded-xl border border-[#3a3d42] bg-[#2a2d31]/70 py-2.5 text-sm text-white/85 hover:bg-[#3a3f47] hover:border-[#5a636e] transition">
                     <span className="text-base">G</span>
                     <span>Google</span>
                   </button>
-                  <button className="flex items-center justify-center gap-2 rounded-xl border border-[#3a3d42] bg-[#2a2d31]/70 py-2.5 text-sm text-white/85 hover:bg-[#3a3f47] hover:border-[#5a636e] transition">
+                  <button type="button" className="flex items-center justify-center gap-2 rounded-xl border border-[#3a3d42] bg-[#2a2d31]/70 py-2.5 text-sm text-white/85 hover:bg-[#3a3f47] hover:border-[#5a636e] transition">
                     <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <rect x="3" y="3" width="18" height="18" rx="2" />
                       <rect x="7" y="7" width="3" height="3" />
