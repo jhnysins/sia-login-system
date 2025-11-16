@@ -22,10 +22,11 @@ export default function VerificationPage({ user, onVerified }) {
       const generateQR = async () => {
         const token = btoa(`${user.uid}:${Date.now()}`);
         setQrToken(token);
-        setQrData(`http://192.168.131.1:3000/verify?token=${token}`);
+        const BASE_URL = process.env.REACT_APP_BASE_URL || 'https://sia-login-system-demesis221s-projects.vercel.app';
+        setQrData(`${BASE_URL}/verify?token=${token}`);
         
         try {
-          const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+          const API_URL = process.env.REACT_APP_API_URL || 'https://striking-essence-production-ca78.up.railway.app';
           await fetch(`${API_URL}/api/qr/store`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -43,7 +44,7 @@ export default function VerificationPage({ user, onVerified }) {
     if (method === "qr" && qrToken) {
       const pollInterval = setInterval(async () => {
         try {
-          const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+          const API_URL = process.env.REACT_APP_API_URL || 'https://striking-essence-production-ca78.up.railway.app';
           const res = await fetch(`${API_URL}/api/qr/check/${qrToken}`);
           const data = await res.json();
           if (data.verified) {
@@ -65,7 +66,8 @@ export default function VerificationPage({ user, onVerified }) {
           if (prev <= 1) {
             const token = btoa(`${user.uid}:${Date.now()}`);
             setQrToken(token);
-            setQrData(`http://192.168.131.1:3000/verify?token=${token}`);
+            const BASE_URL = process.env.REACT_APP_BASE_URL || 'https://sia-login-system-demesis221s-projects.vercel.app';
+            setQrData(`${BASE_URL}/verify?token=${token}`);
             return 60;
           }
           return prev - 1;

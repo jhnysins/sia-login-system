@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import "../styles/QRLogin.css";
 import "../styles/GradientBackground.css";
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const API_URL = process.env.REACT_APP_API_URL || 'https://striking-essence-production-ca78.up.railway.app';
 
 export default function QRVerifyMobile() {
   const [searchParams] = useSearchParams();
