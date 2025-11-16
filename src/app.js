@@ -6,36 +6,34 @@ import Dashboard from './dashboard';
 import './GradientBackground.css'; // Using your existing background
 
 export default function App() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+    useEffect(() => {
     // This listener is the core of the auth system.
     // It fires when the user logs in or logs out.
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser); // Will be null if logged out, or a user object if logged in
-      setLoading(false);
+        setLoading(false);
     });
 
     // Cleanup subscription on unmount
     return () => unsubscribe();
-  }, []);
+    }, []);
 
   // Show a loading screen while Firebase checks the auth status
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center animated-gradient-bg text-white text-2xl font-semibold">
-        Loading...
-      </div>
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center animated-gradient-bg text-white text-2xl font-semibold">
+                Loading...
+            </div>
     );
-  }
+    }
 
-  // If loading is done:
-  // - If there is no user, show the login form.
-  // - If there IS a user, show the dashboard.
-  return (
-    <div>
-      {!user ? <LoginForm /> : <Dashboard user={user} />}
-    </div>
-  );
+
+    return (
+        <div>
+            {(!user || !user.emailVerified) ? <LoginForm /> : <Dashboard user={user} />}
+        </div>
+    );
 }
