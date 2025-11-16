@@ -22,7 +22,7 @@ export default function VerificationPage({ user, onVerified }) {
       const generateQR = async () => {
         const token = btoa(`${user.uid}:${Date.now()}`);
         setQrToken(token);
-        const BASE_URL = process.env.REACT_APP_BASE_URL || 'https://sia-login-system-demesis221s-projects.vercel.app';
+        const BASE_URL = process.env.REACT_APP_BASE_URL || 'https://sia-login-system-git-main-demesis221s-projects.vercel.app';
         setQrData(`${BASE_URL}/verify?token=${token}`);
         
         try {
@@ -66,7 +66,7 @@ export default function VerificationPage({ user, onVerified }) {
           if (prev <= 1) {
             const token = btoa(`${user.uid}:${Date.now()}`);
             setQrToken(token);
-            const BASE_URL = process.env.REACT_APP_BASE_URL || 'https://sia-login-system-demesis221s-projects.vercel.app';
+            const BASE_URL = process.env.REACT_APP_BASE_URL || 'https://sia-login-system-git-main-demesis221s-projects.vercel.app';
             setQrData(`${BASE_URL}/verify?token=${token}`);
             return 60;
           }
