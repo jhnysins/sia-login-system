@@ -307,6 +307,10 @@ export default function VerificationPage({ user, onVerified }) {
                 </div>
                 <span className="timer-text">{countdown}s</span>
               </div>
+              <div className="text-center mt-4">
+                <p className="text-white/50 text-xs mb-1">QR URL:</p>
+                <p className="text-white/70 text-xs break-all">{qrData}</p>
+              </div>
             </div>
           )}
 
