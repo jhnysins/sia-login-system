@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import "./LoginForm.css";
-import "./GradientBackground.css";
+import "../styles/LoginForm.css";
+import "../styles/GradientBackground.css";
 
 // Import Firebase services
-import { auth, db } from "./firebase";
+import { auth, db } from "../config/firebase";
 import { 
   createUserWithEmailAndPassword, 
   sendEmailVerification,
