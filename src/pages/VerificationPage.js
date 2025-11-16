@@ -93,7 +93,7 @@ export default function VerificationPage({ user, onVerified }) {
   useEffect(() => {
     if (method === "otp" && !window.recaptchaVerifier) {
       window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-        size: 'invisible',
+        size: 'normal',
         callback: () => {}
       });
     }
