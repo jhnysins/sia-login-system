@@ -1,3 +1,4 @@
-/node_modules
+/node_modules 
+.env
 /do not push
 /do-not push
