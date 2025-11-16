@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
+import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 import { auth } from './config/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import LoginForm from './pages/LoginForm';
@@ -35,19 +36,24 @@ export default function App() {
 
 
     return (
-        <Routes>
-            <Route path="/verify" element={<QRVerifyMobile />} />
-            <Route path="*" element={
-                <div>
-                    {!user ? (
-                        <LoginForm />
-                    ) : !user.emailVerified ? (
-                        <VerificationPage user={user} onVerified={() => user.reload().then(() => setUser(auth.currentUser))} />
-                    ) : (
-                        <Dashboard user={user} />
-                    )}
-                </div>
-            } />
-        </Routes>
+        <GoogleReCaptchaProvider reCaptchaKey="6LdQrQ4sAAAAAMfvAtgN5W32P3ocUgQziHHWJ_rs">
+            <Routes>
+                <Route path="/verify" element={<QRVerifyMobile />} />
+                <Route path="*" element={
+                    <div>
+                        {!user ? (
+                            <LoginForm />
+                        ) : !user.emailVerified ? (
+                            <VerificationPage user={user} onVerified={async () => {
+                                await auth.currentUser.reload();
+                                setUser({...auth.currentUser});
+                            }} />
+                        ) : (
+                            <Dashboard user={user} />
+                        )}
+                    </div>
+                } />
+            </Routes>
+        </GoogleReCaptchaProvider>
     );
 }
