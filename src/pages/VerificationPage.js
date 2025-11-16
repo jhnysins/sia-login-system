@@ -50,9 +50,19 @@ export default function VerificationPage({ user, onVerified }) {
           if (data.verified) {
             clearInterval(pollInterval);
             setMessage("QR verified successfully!");
-            // Mark email as verified by reloading user
-            await user.reload();
-            setTimeout(() => onVerified(), 1500);
+            // Reload user to get updated emailVerified status from Firebase
+            try {
+              await auth.currentUser.reload();
+              const updatedUser = auth.currentUser;
+              if (updatedUser.emailVerified) {
+                setTimeout(() => onVerified(), 1500);
+              } else {
+                setError("Verification failed. Please try again.");
+              }
+            } catch (reloadErr) {
+              console.error('Failed to reload user:', reloadErr);
+              setTimeout(() => onVerified(), 1500);
+            }
           }
         } catch (err) {
           console.error('Polling error:', err);
@@ -60,7 +70,7 @@ export default function VerificationPage({ user, onVerified }) {
       }, 2000);
       return () => clearInterval(pollInterval);
     }
-  }, [method, qrToken, onVerified, user]);
+  }, [method, qrToken, onVerified]);
 
   useEffect(() => {
     if (method === "qr") {
