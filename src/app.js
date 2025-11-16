@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { Routes, Route } from 'react-router-dom';
 import { auth } from './config/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import LoginForm from './pages/LoginForm';
 import Dashboard from './pages/Dashboard';
 import VerificationPage from './pages/VerificationPage';
-import './styles/GradientBackground.css'; // Using your existing background
+import QRVerifyMobile from './pages/QRVerifyMobile';
+import './styles/GradientBackground.css';
 
 export default function App() {
     const [user, setUser] = useState(null);
@@ -33,14 +35,19 @@ export default function App() {
 
 
     return (
-        <div>
-            {!user ? (
-                <LoginForm />
-            ) : !user.emailVerified ? (
-                <VerificationPage user={user} onVerified={() => user.reload().then(() => setUser(auth.currentUser))} />
-            ) : (
-                <Dashboard user={user} />
-            )}
-        </div>
+        <Routes>
+            <Route path="/verify" element={<QRVerifyMobile />} />
+            <Route path="*" element={
+                <div>
+                    {!user ? (
+                        <LoginForm />
+                    ) : !user.emailVerified ? (
+                        <VerificationPage user={user} onVerified={() => user.reload().then(() => setUser(auth.currentUser))} />
+                    ) : (
+                        <Dashboard user={user} />
+                    )}
+                </div>
+            } />
+        </Routes>
     );
 }
