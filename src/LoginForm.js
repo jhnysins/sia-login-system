@@ -130,20 +130,26 @@ export default function LoginForm() {
 
       try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
+        
+        // --- THIS IS THE FIX ---
+        // After sign-in, auth.currentUser is populated.
+        // We MUST force-reload it to get the latest emailVerified status.
+        if (auth.currentUser) {
+            await auth.currentUser.reload();
+        }
+        // Now that auth.currentUser is reloaded, the onAuthStateChanged 
+        // listener in app.js will fire with the *freshest* user data.
+        
+        const freshUser = auth.currentUser; // Get the reloaded user
 
-        if (!user.emailVerified) {
+        if (freshUser && !freshUser.emailVerified) {
           setError("Your email is not verified. Please check your inbox for a verification link.");
-          // Optionally, you can offer to resend the verification email
-          // await sendEmailVerification(user);
         } else {
-          // Sign-in successful!
-          setMessage("Sign in successful! Welcome back.");
-          // Clear form
+          // Success! Clear form. app.js will do the rest.
           setEmail("");
           setPassword("");
-          // Here you would typically redirect the user to a dashboard
-          // e.g., navigate('/dashboard');
+          // The App.js component will now automatically
+          // show the dashboard.
         }
 
       } catch (error) {
