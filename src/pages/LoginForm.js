@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import "../styles/LoginForm.css";
 import "../styles/GradientBackground.css";
 
@@ -15,6 +16,7 @@ import {
 import { doc, setDoc, getDoc } from "firebase/firestore"; // <-- ADDED getDoc
 
 export default function LoginForm() {
+  const { executeRecaptcha } = useGoogleReCaptcha();
   const [showPassword, setShowPassword] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -76,7 +78,23 @@ export default function LoginForm() {
     e.preventDefault();
     setError(null);
     setMessage(null);
-    setIsLoading(true); // Set loading true for both sign-in and sign-up
+    setIsLoading(true);
+
+    // Execute reCAPTCHA
+    if (!executeRecaptcha) {
+      setError('reCAPTCHA not loaded');
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const token = await executeRecaptcha(isSignUp ? 'signup' : 'login');
+      console.log('reCAPTCHA token:', token);
+    } catch (err) {
+      setError('reCAPTCHA verification failed');
+      setIsLoading(false);
+      return;
+    }
 
     // --- SIGN UP LOGIC ---
     if (isSignUp) {
