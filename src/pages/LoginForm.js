@@ -9,11 +9,14 @@ import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
   signInWithEmailAndPassword,
-  GoogleAuthProvider, // <-- NEW IMPORT
-  signInWithPopup, // <-- NEW IMPORT
-  sendPasswordResetEmail, // <-- ADDED FOR FORGOT PASSWORD
+  GoogleAuthProvider,
+  signInWithPopup,
+  sendPasswordResetEmail,
+  setPersistence,
+  browserLocalPersistence,
+  browserSessionPersistence
 } from "firebase/auth";
-import { doc, setDoc, getDoc } from "firebase/firestore"; // <-- ADDED getDoc
+import { doc, setDoc, getDoc } from "firebase/firestore";
 
 export default function LoginForm() {
   const { executeRecaptcha } = useGoogleReCaptcha();
@@ -21,6 +24,7 @@ export default function LoginForm() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [currentImage, setCurrentImage] = useState(0);
+  const [rememberMe, setRememberMe] = useState(false);
 
   // Form state
   const [firstName, setFirstName] = useState("");
@@ -198,6 +202,9 @@ export default function LoginForm() {
           return;
         }
 
+        // Set persistence based on remember me
+        await setPersistence(auth, rememberMe ? browserLocalPersistence : browserSessionPersistence);
+        
         await signInWithEmailAndPassword(auth, loginEmail, password);
 
         // --- THIS IS THE FIX ---
@@ -543,6 +550,8 @@ export default function LoginForm() {
                       <input
                         id="remember"
                         type="checkbox"
+                        checked={rememberMe}
+                        onChange={(e) => setRememberMe(e.target.checked)}
                         className="h-4 w-4 rounded border-[#3a3d42] bg-[#2a2d31] text-[#d9d9d9] focus:ring-[#d9d9d9]"
                       />
                       <label htmlFor="remember" className="text-white/70">
