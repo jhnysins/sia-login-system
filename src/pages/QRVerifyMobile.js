@@ -39,26 +39,23 @@ export default function QRVerifyMobile() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 animated-gradient-bg">
-      <div className="qr-card text-center" style={{ maxWidth: "400px" }}>
+      <div className="qr-card text-center" style={{ maxWidth: "400px", width: "100%", minHeight: "200px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
         {status === "loading" && (
           <>
-            <div className="text-6xl mb-4">⏳</div>
-            <h1 className="text-white text-2xl font-semibold mb-2">Verifying...</h1>
-            <p className="text-white/70">Please wait</p>
+            <h1 className="text-white text-2xl font-semibold mb-3">Verifying...</h1>
+            <p className="text-white/70 text-base">Please wait while we confirm your login</p>
           </>
         )}
         {status === "success" && (
           <>
-            <div className="text-6xl mb-4">✅</div>
-            <h1 className="text-white text-2xl font-semibold mb-2">Verified!</h1>
-            <p className="text-white/70">You can close this page and return to your computer</p>
+            <h1 className="text-white text-2xl font-semibold mb-3">Verified!</h1>
+            <p className="text-white/70 text-base">You can close this page and return to your computer</p>
           </>
         )}
         {status === "error" && (
           <>
-            <div className="text-6xl mb-4">❌</div>
-            <h1 className="text-white text-2xl font-semibold mb-2">Verification Failed</h1>
-            <p className="text-white/70">This QR code is invalid or expired</p>
+            <h1 className="text-white text-2xl font-semibold mb-3">Verification Failed</h1>
+            <p className="text-white/70 text-base">This QR code is invalid or expired</p>
           </>
         )}
       </div>
