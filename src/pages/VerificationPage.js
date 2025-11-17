@@ -6,12 +6,13 @@ import "../styles/QRLogin.css";
 import "../styles/GradientBackground.css";
 
 export default function VerificationPage({ user, onVerified }) {
-  const [method, setMethod] = useState("email");
+  const [method, setMethod] = useState(null);
   const [qrData, setQrData] = useState("");
   const [countdown, setCountdown] = useState(60);
   const [message, setMessage] = useState(null);
   const [error, setError] = useState(null);
   const [qrToken, setQrToken] = useState(null);
+  const [emailSent, setEmailSent] = useState(false);
 
   useEffect(() => {
     if (method === "qr") {
@@ -88,6 +89,17 @@ export default function VerificationPage({ user, onVerified }) {
 
 
 
+  const handleSendEmail = async () => {
+    try {
+      await sendEmailVerification(user);
+      setEmailSent(true);
+      setMessage("Verification email sent!");
+      setError(null);
+    } catch (err) {
+      setError("Failed to send email. Try again.");
+    }
+  };
+
   const handleResendEmail = async () => {
     try {
       await sendEmailVerification(user);
@@ -127,7 +139,11 @@ export default function VerificationPage({ user, onVerified }) {
 
           <div className="flex gap-3 mb-6">
             <button
-              onClick={() => setMethod("email")}
+              onClick={() => {
+                setMethod("email");
+                setError(null);
+                setMessage(null);
+              }}
               className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition ${
                 method === "email"
                   ? "bg-white text-black"
@@ -137,7 +153,11 @@ export default function VerificationPage({ user, onVerified }) {
               Email Link
             </button>
             <button
-              onClick={() => setMethod("qr")}
+              onClick={() => {
+                setMethod("qr");
+                setError(null);
+                setMessage(null);
+              }}
               className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition ${
                 method === "qr"
                   ? "bg-white text-black"
@@ -150,21 +170,37 @@ export default function VerificationPage({ user, onVerified }) {
 
           {method === "email" && (
             <div className="space-y-4">
-              <p className="text-white/70 text-sm">
-                We sent a verification link to <strong>{user.email}</strong>
-              </p>
-              <button
-                onClick={handleCheckVerification}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-[#d9d9d9] to-[#e7e7e7] text-black font-medium hover:opacity-90 transition"
-              >
-                I've Verified My Email
-              </button>
-              <button
-                onClick={handleResendEmail}
-                className="w-full py-3 rounded-xl bg-[#2a2d31] text-white/85 hover:bg-[#3a3d42] transition"
-              >
-                Resend Email
-              </button>
+              {!emailSent ? (
+                <>
+                  <p className="text-white/70 text-sm">
+                    Click below to send a verification link to <strong>{user.email}</strong>
+                  </p>
+                  <button
+                    onClick={handleSendEmail}
+                    className="w-full py-3 rounded-xl bg-gradient-to-r from-[#d9d9d9] to-[#e7e7e7] text-black font-medium hover:opacity-90 transition"
+                  >
+                    Send Verification Email
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p className="text-white/70 text-sm">
+                    We sent a verification link to <strong>{user.email}</strong>
+                  </p>
+                  <button
+                    onClick={handleCheckVerification}
+                    className="w-full py-3 rounded-xl bg-gradient-to-r from-[#d9d9d9] to-[#e7e7e7] text-black font-medium hover:opacity-90 transition"
+                  >
+                    I've Verified My Email
+                  </button>
+                  <button
+                    onClick={handleResendEmail}
+                    className="w-full py-3 rounded-xl bg-[#2a2d31] text-white/85 hover:bg-[#3a3d42] transition"
+                  >
+                    Resend Email
+                  </button>
+                </>
+              )}
             </div>
           )}
 
@@ -202,6 +238,14 @@ export default function VerificationPage({ user, onVerified }) {
                 <p className="text-white/50 text-xs mb-1">QR URL:</p>
                 <p className="text-white/70 text-xs break-all">{qrData}</p>
               </div>
+            </div>
+          )}
+
+          {method === null && (
+            <div className="text-center py-8">
+              <p className="text-white/70 text-sm">
+                Please select a verification method above to continue
+              </p>
             </div>
           )}
 
