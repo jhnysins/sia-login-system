@@ -1,20 +1,16 @@
 import { useState, useEffect } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { auth } from "../config/firebase";
-import { sendEmailVerification, RecaptchaVerifier, PhoneAuthProvider, linkWithCredential } from "firebase/auth";
+import { sendEmailVerification } from "firebase/auth";
 import "../styles/QRLogin.css";
 import "../styles/GradientBackground.css";
 
 export default function VerificationPage({ user, onVerified }) {
   const [method, setMethod] = useState("email");
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [qrData, setQrData] = useState("");
   const [countdown, setCountdown] = useState(60);
   const [message, setMessage] = useState(null);
   const [error, setError] = useState(null);
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [verificationId, setVerificationId] = useState(null);
-  const [isOtpSent, setIsOtpSent] = useState(false);
   const [qrToken, setQrToken] = useState(null);
 
   useEffect(() => {
@@ -90,58 +86,7 @@ export default function VerificationPage({ user, onVerified }) {
     }
   }, [method, user.uid]);
 
-  useEffect(() => {
-    if (method === "otp" && !window.recaptchaVerifier) {
-      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-        size: 'normal',
-        callback: () => {}
-      });
-    }
-  }, [method]);
 
-  const handleOtpChange = (index, value) => {
-    if (value.length > 1) return;
-    const newOtp = [...otp];
-    newOtp[index] = value;
-    setOtp(newOtp);
-    if (value && index < 5) {
-      document.getElementById(`otp-${index + 1}`)?.focus();
-    }
-  };
-
-  const handleSendOtp = async () => {
-    if (!phoneNumber) {
-      setError("Please enter your phone number");
-      return;
-    }
-    try {
-      setError(null);
-      const provider = new PhoneAuthProvider(auth);
-      const id = await provider.verifyPhoneNumber(phoneNumber, window.recaptchaVerifier);
-      setVerificationId(id);
-      setIsOtpSent(true);
-      setMessage("OTP sent to your phone!");
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
-  const handleVerifyOtp = async () => {
-    const code = otp.join("");
-    if (code.length !== 6) {
-      setError("Please enter the complete 6-digit code");
-      return;
-    }
-    try {
-      setError(null);
-      const credential = PhoneAuthProvider.credential(verificationId, code);
-      await linkWithCredential(user, credential);
-      setMessage("Phone verified successfully!");
-      setTimeout(() => onVerified(), 1500);
-    } catch (err) {
-      setError("Invalid OTP. Please try again.");
-    }
-  };
 
   const handleResendEmail = async () => {
     try {
@@ -192,16 +137,6 @@ export default function VerificationPage({ user, onVerified }) {
               Email Link
             </button>
             <button
-              onClick={() => setMethod("otp")}
-              className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition ${
-                method === "otp"
-                  ? "bg-white text-black"
-                  : "bg-[#2a2d31] text-white/70 hover:bg-[#3a3d42]"
-              }`}
-            >
-              OTP Code
-            </button>
-            <button
               onClick={() => setMethod("qr")}
               className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition ${
                 method === "qr"
@@ -230,63 +165,6 @@ export default function VerificationPage({ user, onVerified }) {
               >
                 Resend Email
               </button>
-            </div>
-          )}
-
-          {method === "otp" && (
-            <div className="space-y-4">
-              {!isOtpSent ? (
-                <>
-                  <p className="text-white/70 text-sm text-center">
-                    Enter your phone number to receive OTP
-                  </p>
-                  <input
-                    type="tel"
-                    placeholder="+1234567890"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    className="w-full py-3 px-4 rounded-xl bg-[#2a2d31] border border-[#3a3d42] text-white focus:outline-none focus:ring-2 focus:ring-white"
-                  />
-                  <div id="recaptcha-container"></div>
-                  <button
-                    onClick={handleSendOtp}
-                    className="w-full py-3 rounded-xl bg-gradient-to-r from-[#d9d9d9] to-[#e7e7e7] text-black font-medium hover:opacity-90 transition"
-                  >
-                    Send OTP
-                  </button>
-                </>
-              ) : (
-                <>
-                  <p className="text-white/70 text-sm text-center">
-                    Enter the 6-digit code sent to {phoneNumber}
-                  </p>
-                  <div className="flex gap-2 justify-center">
-                    {otp.map((digit, index) => (
-                      <input
-                        key={index}
-                        id={`otp-${index}`}
-                        type="text"
-                        maxLength="1"
-                        value={digit}
-                        onChange={(e) => handleOtpChange(index, e.target.value)}
-                        className="w-12 h-14 text-center text-2xl rounded-xl bg-[#2a2d31] border border-[#3a3d42] text-white focus:outline-none focus:ring-2 focus:ring-white"
-                      />
-                    ))}
-                  </div>
-                  <button
-                    onClick={handleVerifyOtp}
-                    className="w-full py-3 rounded-xl bg-gradient-to-r from-[#d9d9d9] to-[#e7e7e7] text-black font-medium hover:opacity-90 transition"
-                  >
-                    Verify OTP
-                  </button>
-                  <button
-                    onClick={() => setIsOtpSent(false)}
-                    className="w-full py-2 text-white/70 hover:text-white text-sm transition"
-                  >
-                    Change Phone Number
-                  </button>
-                </>
-              )}
             </div>
           )}
 

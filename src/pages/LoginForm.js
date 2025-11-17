@@ -162,7 +162,43 @@ export default function LoginForm() {
       }
 
       try {
-        await signInWithEmailAndPassword(auth, email, password);
+        const API_URL = process.env.REACT_APP_API_URL || 'https://striking-essence-production-ca78.up.railway.app';
+        let loginEmail = email;
+        
+        // If input doesn't contain @, treat as username and get email
+        if (!email.includes('@')) {
+          try {
+            const emailRes = await fetch(`${API_URL}/api/auth/get-email`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ username: email })
+            });
+            const emailData = await emailRes.json();
+            if (emailData.email) {
+              loginEmail = emailData.email;
+            }
+          } catch (err) {
+            setError("Invalid username or email.");
+            setIsLoading(false);
+            return;
+          }
+        }
+        
+        // Check if account is locked
+        const lockCheck = await fetch(`${API_URL}/api/auth/check-lockout`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: loginEmail })
+        });
+        const lockData = await lockCheck.json();
+        
+        if (lockData.locked) {
+          setError(lockData.message);
+          setIsLoading(false);
+          return;
+        }
+
+        await signInWithEmailAndPassword(auth, loginEmail, password);
 
         // --- THIS IS THE FIX ---
         // After sign-in, auth.currentUser is populated.
@@ -174,6 +210,13 @@ export default function LoginForm() {
         // listener in app.js will fire with the *freshest* user data.
 
         const freshUser = auth.currentUser; // Get the reloaded user
+
+        // Reset failed attempts on successful login
+        await fetch(`${API_URL}/api/auth/reset-attempts`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: loginEmail })
+        });
 
         if (freshUser && !freshUser.emailVerified) {
           setError(
@@ -187,13 +230,39 @@ export default function LoginForm() {
           // show the dashboard.
         }
       } catch (error) {
+        // Record failed attempt
+        const API_URL = process.env.REACT_APP_API_URL || 'https://striking-essence-production-ca78.up.railway.app';
+        let loginEmail = email;
+        if (!email.includes('@')) {
+          try {
+            const emailRes = await fetch(`${API_URL}/api/auth/get-email`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ username: email })
+            });
+            const emailData = await emailRes.json();
+            if (emailData.email) loginEmail = emailData.email;
+          } catch (err) {}
+        }
+        
+        const failResponse = await fetch(`${API_URL}/api/auth/failed-attempt`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: loginEmail })
+        });
+        const failData = await failResponse.json();
+
         // Handle Firebase sign-in errors
         if (
           error.code === "auth/user-not-found" ||
           error.code === "auth/wrong-password" ||
           error.code === "auth/invalid-credential"
         ) {
-          setError("Invalid email or password.");
+          if (failData.locked) {
+            setError(failData.message);
+          } else {
+            setError(`Invalid email or password. ${failData.remainingAttempts} attempt(s) remaining.`);
+          }
         } else {
           setError("Failed to sign in. Please try again.");
           console.error("Sign in error:", error);
