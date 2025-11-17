@@ -490,8 +490,8 @@ export default function LoginForm() {
                     {isSignUp ? "Email" : "Username or Email"}
                   </label>
                   <input
-                    type="email"
-                    placeholder="you@example.com"
+                    type={isSignUp ? "email" : "text"}
+                    placeholder={isSignUp ? "you@example.com" : "username or email"}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full rounded-xl bg-[#2a2d31] border border-[#3a3d42] px-3.5 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#d9d9d9] focus:border-transparent transition"
