@@ -7,6 +7,7 @@ import LoginForm from './pages/LoginForm';
 import Dashboard from './pages/Dashboard';
 import VerificationPage from './pages/VerificationPage';
 import QRVerifyMobile from './pages/QRVerifyMobile';
+import TermsAndConditions from './pages/TermsAndConditions';
 import './styles/GradientBackground.css';
 
 export default function App() {
@@ -39,6 +40,7 @@ export default function App() {
         <GoogleReCaptchaProvider reCaptchaKey="6LdQrQ4sAAAAAMfvAtgN5W32P3ocUgQziHHWJ_rs">
             <Routes>
                 <Route path="/verify" element={<QRVerifyMobile />} />
+                <Route path="/terms" element={<TermsAndConditions />} />
                 <Route path="*" element={
                     <div>
                         {!user ? (

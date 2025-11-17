@@ -122,8 +122,7 @@ export default function LoginForm() {
         );
         const user = userCredential.user;
 
-        // 2. Send verification email
-        await sendEmailVerification(user);
+        // 2. Don't automatically send verification email - let user choose method
 
         // 3. Create user document in Firestore (like your screenshot)
         // We use the user's UID (user.uid) as the document ID
@@ -137,7 +136,7 @@ export default function LoginForm() {
 
         // 4. Set success message and clear form
         setMessage(
-          "Account created! Please check your email for a verification link."
+          "Account created! Please verify your account to continue."
         );
         setFirstName("");
         setLastName("");
@@ -536,12 +535,14 @@ export default function LoginForm() {
                     />
                     <label htmlFor="terms" className="leading-snug">
                       I agree to the{" "}
-                      <button
-                        type="button"
+                      <a
+                        href="/terms"
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="underline underline-offset-2 hover:text-white/80"
                       >
                         Terms & Conditions
-                      </button>
+                      </a>
                     </label>
                   </div>
                 ) : (
