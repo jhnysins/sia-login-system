@@ -7,7 +7,6 @@ import "../styles/GradientBackground.css";
 import { auth, db } from "../config/firebase";
 import {
   createUserWithEmailAndPassword,
-  sendEmailVerification,
   signInWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
@@ -37,6 +36,7 @@ export default function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
+  const [passwordStrength, setPasswordStrength] = useState({ score: 0, label: '', color: '' });
 
   // --- NEW: Password Reset Modal State ---
   const [showPasswordResetModal, setShowPasswordResetModal] = useState(false);
@@ -44,6 +44,24 @@ export default function LoginForm() {
   const [modalIsLoading, setModalIsLoading] = useState(false);
   const [modalError, setModalError] = useState(null);
   const [modalMessage, setModalMessage] = useState(null);
+
+  // Calculate password strength
+  const calculatePasswordStrength = (pwd) => {
+    let score = 0;
+    if (!pwd) return { score: 0, label: '', color: '' };
+    
+    if (pwd.length >= 8) score++;
+    if (pwd.length >= 12) score++;
+    if (/[a-z]/.test(pwd)) score++;
+    if (/[A-Z]/.test(pwd)) score++;
+    if (/[0-9]/.test(pwd)) score++;
+    if (/[^a-zA-Z0-9]/.test(pwd)) score++;
+    
+    if (score <= 2) return { score: 1, label: 'Weak', color: '#ef4444' };
+    if (score <= 4) return { score: 2, label: 'Fair', color: '#f59e0b' };
+    if (score <= 5) return { score: 3, label: 'Good', color: '#10b981' };
+    return { score: 4, label: 'Strong', color: '#22c55e' };
+  };
 
   const images = [
     "https://images.pexels.com/photos/417173/pexels-photo-417173.jpeg?auto=compress&cs=tinysrgb&w=1200",
@@ -132,6 +150,7 @@ export default function LoginForm() {
           middlename: "", // Added this field from your screenshot
           username: username,
           email: user.email,
+          createdAt: Date.now()
         });
 
         // 4. Set success message and clear form
@@ -506,7 +525,10 @@ export default function LoginForm() {
                       type={showPassword ? "text" : "password"}
                       placeholder="Enter your password"
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        if (isSignUp) setPasswordStrength(calculatePasswordStrength(e.target.value));
+                      }}
                       className="w-full rounded-xl bg-[#2a2d31] border border-[#3a3d42] px-3.5 py-3 pr-11 text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#d9d9d9] focus:border-transparent transition"
                     />
                     <button
@@ -518,7 +540,31 @@ export default function LoginForm() {
                       {showPassword ? "Hide" : "Show"}
                     </button>
                   </div>
-                  {isSignUp && (
+                  {isSignUp && password && (
+                    <div className="mt-2">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[11px] text-white/60">Password strength:</span>
+                        <span className="text-[11px] font-medium" style={{ color: passwordStrength.color }}>
+                          {passwordStrength.label}
+                        </span>
+                      </div>
+                      <div className="flex gap-1">
+                        {[1, 2, 3, 4].map((level) => (
+                          <div
+                            key={level}
+                            className="h-1 flex-1 rounded-full transition-all duration-300"
+                            style={{
+                              backgroundColor: level <= passwordStrength.score ? passwordStrength.color : '#3a3d42'
+                            }}
+                          />
+                        ))}
+                      </div>
+                      <p className="mt-1.5 text-[11px] text-white/40">
+                        Use 8+ characters with uppercase, lowercase, numbers & symbols.
+                      </p>
+                    </div>
+                  )}
+                  {isSignUp && !password && (
                     <p className="mt-1 text-[11px] text-white/40">
                       Use 8+ characters with a mix of letters, numbers & symbols.
                     </p>
