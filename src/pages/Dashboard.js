@@ -37,7 +37,6 @@ export default function Dashboard({ user }) {
         setUsers(usersList);
         
         // Calculate real data from user timestamps
-        const now = Date.now();
         const todayStart = new Date().setHours(0, 0, 0, 0);
         const usersToday = usersList.filter(u => u.createdAt && u.createdAt >= todayStart).length;
         
