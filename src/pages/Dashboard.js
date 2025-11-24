@@ -11,6 +11,7 @@ export default function Dashboard({ user }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [analytics, setAnalytics] = useState(null);
 
+
   const handleLogout = async () => {
     try {
       await signOut(auth);
@@ -19,6 +20,7 @@ export default function Dashboard({ user }) {
     }
   };
 
+  
   const handleClose = () => {
     setShowModal(false);
   };
