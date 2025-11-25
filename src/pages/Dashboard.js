@@ -42,6 +42,7 @@ export default function Dashboard({ user }) {
         const usersToday = usersList.filter(u => u.createdAt && u.createdAt >= todayStart).length;
         
         const last7Days = [];
+        
         for (let i = 6; i >= 0; i--) {
           const date = new Date();
           date.setDate(date.getDate() - i);
