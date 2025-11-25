@@ -27,7 +27,7 @@ export default function Dashboard({ user }) {
 
   const username = user.displayName || user.email?.split('@')[0] || 'User';
 
-  // Fetch users from Firebase
+  
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -38,12 +38,11 @@ export default function Dashboard({ user }) {
         }));
         setUsers(usersList);
         
-        // Calculate real data from user timestamps
         const todayStart = new Date().setHours(0, 0, 0, 0);
         const usersToday = usersList.filter(u => u.createdAt && u.createdAt >= todayStart).length;
         
-        // Generate last 7 days with real counts
         const last7Days = [];
+
         for (let i = 6; i >= 0; i--) {
           const date = new Date();
           date.setDate(date.getDate() - i);
