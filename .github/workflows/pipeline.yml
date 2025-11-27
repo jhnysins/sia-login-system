@@ -49,4 +49,6 @@ jobs:
         path: build/
     
     - name: Deploy
-      run: echo "Deploy to your hosting service here"
+      run: |
+        echo "Frontend: https://sia-login-system.vercel.app/"
+        echo "Backend: https://striking-essence-production-ca78.up.railway.app"
