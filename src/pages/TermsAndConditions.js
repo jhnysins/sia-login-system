@@ -2,6 +2,9 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/GradientBackground.css';
 
+const LAST_UPDATED = '2024-01-15';
+const SUPPORT_EMAIL = process.env.REACT_APP_SUPPORT_EMAIL || 'support@example.com';
+
 export default function TermsAndConditions() {
   const navigate = useNavigate();
 
@@ -16,7 +19,7 @@ export default function TermsAndConditions() {
         </button>
 
         <h1 className="text-4xl font-bold mb-6">Terms and Conditions</h1>
-        <p className="text-white/70 mb-8">Last updated: {new Date().toLocaleDateString()}</p>
+        <p className="text-white/70 mb-8">Last updated: {LAST_UPDATED}</p>
 
         <div className="space-y-6 text-white/85">
           <section>
@@ -61,7 +64,7 @@ export default function TermsAndConditions() {
 
           <section>
             <h2 className="text-2xl font-semibold mb-3">9. Contact Information</h2>
-            <p>If you have any questions about these Terms, please contact us at support@example.com</p>
+            <p>If you have any questions about these Terms, please contact us at {SUPPORT_EMAIL}</p>
           </section>
         </div>
       </div>
