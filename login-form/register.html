@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="auth-container">
+    <div class="image-panel">
+      <img src="https://images.pexels.com/photos/2529148/pexels-photo-2529148.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="Nike shoes">
+      <div class="image-overlay"></div>
+      <div class="image-logo">NIKE</div>
+      <div class="image-text">
+        <p>Just Do It.<br>Step Into Greatness</p>
+        <div class="dots">
+          <span class="dot active"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </div>
+      </div>
+    </div>
+    <div class="form-panel">
+      <h1>Create an account</h1>
+      <form>
+        <div style="display: flex; gap: 12px;">
+          <div class="input-group" style="flex: 1;">
+            <label>First name</label>
+            <input type="text" placeholder="First name">
+          </div>
+          <div class="input-group" style="flex: 1;">
+            <label>Last name</label>
+            <input type="text" placeholder="Last name">
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Username</label>
+          <input type="text" placeholder="Username">
+        </div>
+        <div class="input-group">
+          <label>Email</label>
+          <input type="email" placeholder="you@example.com">
+        </div>
+        <div class="input-group">
+          <label>Password</label>
+          <div class="password-wrapper">
+            <input type="password" id="password" placeholder="Enter your password">
+            <button type="button" class="toggle-password" onclick="togglePassword()">Show</button>
+          </div>
+          <div class="password-strength">
+            <div class="strength-bars">
+              <span class="bar"></span>
+              <span class="bar"></span>
+              <span class="bar"></span>
+              <span class="bar"></span>
+            </div>
+            <p class="strength-hint">Use 8+ characters with a mix of letters, numbers & symbols.</p>
+          </div>
+        </div>
+        <label class="checkbox-label" style="margin: 16px 0;">
+          <input type="checkbox" checked>
+          <span style="font-size: 12px;">I agree to the <a href="#" style="text-decoration: underline;">Terms & Conditions</a></span>
+        </label>
+        <button type="submit" class="btn-submit">Create account</button>
+      </form>
+      <p class="signup-text">Already have an account? <a href="index.html">Log in</a></p>
+      <p style="color: rgba(255,255,255,0.4); font-size: 11px; margin-top: 24px; line-height: 1.5;">By creating an account you agree to receive product updates and occasional emails. You can unsubscribe anytime.</p>
+    </div>
+  </div>
+  <script>
+    const images = [
+      'https://images.pexels.com/photos/2529148/pexels-photo-2529148.jpeg?auto=compress&cs=tinysrgb&w=1200',
+      'https://images.pexels.com/photos/1598505/pexels-photo-1598505.jpeg?auto=compress&cs=tinysrgb&w=1200',
+      'https://images.pexels.com/photos/1456706/pexels-photo-1456706.jpeg?auto=compress&cs=tinysrgb&w=1200',
+      'https://images.pexels.com/photos/2529147/pexels-photo-2529147.jpeg?auto=compress&cs=tinysrgb&w=1200'
+    ];
+    let currentIndex = 0;
+
+    function changeImage() {
+      currentIndex = (currentIndex + 1) % images.length;
+      document.querySelector('.image-panel img').src = images[currentIndex];
+      
+      document.querySelectorAll('.dot').forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentIndex);
+      });
+    }
+
+    setInterval(changeImage, 5000);
+
+    function togglePassword() {
+      const input = document.getElementById('password');
+      const btn = document.querySelector('.toggle-password');
+      if (input.type === 'password') {
+        input.type = 'text';
+        btn.textContent = 'Hide';
+      } else {
+        input.type = 'password';
+        btn.textContent = 'Show';
+      }
+    }
+  </script>
+</body>
+</html>
